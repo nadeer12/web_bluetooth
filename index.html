@@ -40,12 +40,6 @@
     .hidden {
       display: none;
     }
-
-    /* Align and style printed data */
-    #printed-data {
-      text-align: center;
-      font-weight: bold;
-    }
   </style>
 </head>
 <body>
@@ -89,7 +83,7 @@
         if (!text) return; // Don't print if no text entered
         try {
           const encoder = new TextEncoder("utf-8");
-          const data = encoder.encode('<div id="printed-data">' + text + '</div>'); // Add HTML tags for formatting
+          const data = encoder.encode(text + '\u000A\u000D'); // Add line feed and carriage return
           await printCharacteristic.writeValue(data);
         } catch (error) {
           handleError(error);
