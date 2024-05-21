@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bluetooth Printer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    #app {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #content {
+      text-align: center;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      background-color: #4285f4;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="content">
+      <input type="text" id="message" placeholder="Enter text to print">
+      <button id="print-btn">Print</button>
+    </div>
+    <div id="dialog" class="hidden">
+      <h2>Error</h2>
+      <p>Could not connect to Bluetooth device!</p>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const dialog = document.getElementById('dialog');
+      const message = document.getElementById('message');
+      const printBtn = document.getElementById('print-btn');
+      let printCharacteristic;
+
+      async function print() {
+        try {
+          if (!printCharacteristic) {
+            const device = await navigator.bluetooth.requestDevice({
+              filters: [{ services: ['000018f0-0000-1000-8000-00805f9b34fb'] }]
+            });
+            console.log('> Found ' + device.name);
+            console.log('Connecting to GATT Server...');
+            const server = await device.gatt.connect();
+            const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
+            printCharacteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
+          }
+          await sendTextData();
+        } catch (error) {
+          handleError(error);
+        }
+      }
+
+      async function sendTextData() {
+        const text = message.value;
+        if (!text) return; // Don't print if no text entered
+        try {
+          const encoder = new TextEncoder("utf-8");
+          const data = encoder.encode(text + '\u000A\u000D'); // Add line feed and carriage return
+          await printCharacteristic.writeValue(data);
+        } catch (error) {
+          handleError(error);
+        }
+      }
+
+      function handleError(error) {
+        console.error(error);
+        dialog.classList.remove('hidden');
+      }
+
+      printBtn.addEventListener('click', print);
+    });
+  </script>
+</body>
+</html>
