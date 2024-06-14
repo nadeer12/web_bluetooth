@@ -7,13 +7,20 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-    }
-
-    #app {
+      background-color: #f0f2f5;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      margin: 0;
+    }
+
+    #app {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
     }
 
     #content {
@@ -21,16 +28,21 @@
     }
 
     input[type="text"], input[type="number"] {
+      width: calc(100% - 22px);
       padding: 10px;
-      margin: 5px;
+      margin: 5px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
 
     button {
       padding: 10px 20px;
       border: none;
+      border-radius: 4px;
       background-color: #4285f4;
       color: #fff;
       cursor: pointer;
+      margin: 5px;
     }
 
     button:hover {
@@ -43,22 +55,45 @@
 
     #items {
       margin-top: 10px;
+      text-align: left;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+
+    #items div {
+      margin-bottom: 5px;
+    }
+
+    #total {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    #dialog {
+      text-align: center;
+      background-color: #ffdddd;
+      color: #d8000c;
+      padding: 10px;
+      border: 1px solid #d8000c;
+      border-radius: 4px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <div id="app">
     <div id="content">
+      <h2>Receipt Printer</h2>
       <div>
         <input type="text" id="item-name" placeholder="Item name">
-        <input type="number" id="item-price" placeholder="Item price">
+        <input type="number" id="item-price" placeholder="Item price" step="0.01">
         <button id="add-item-btn">Add Item</button>
       </div>
       <div id="items"></div>
-      <div>
-        <p>Total: $<span id="total-price">0.00</span></p>
-        <button id="print-btn">Print</button>
-      </div>
+      <div id="total">Total: $<span id="total-price">0.00</span></div>
+      <button id="print-btn">Print</button>
     </div>
     <div id="dialog" class="hidden">
       <h2>Error</h2>
