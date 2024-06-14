@@ -7,42 +7,30 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f0f2f5;
+    }
+
+    #app {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      margin: 0;
-    }
-
-    #app {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      width: 300px;
     }
 
     #content {
       text-align: center;
     }
 
-    input[type="text"], input[type="number"] {
-      width: calc(100% - 22px);
+    input[type="text"] {
       padding: 10px;
-      margin: 5px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      margin-bottom: 10px;
     }
 
     button {
       padding: 10px 20px;
       border: none;
-      border-radius: 4px;
       background-color: #4285f4;
       color: #fff;
       cursor: pointer;
-      margin: 5px;
     }
 
     button:hover {
@@ -52,47 +40,12 @@
     .hidden {
       display: none;
     }
-
-    #items {
-      margin-top: 10px;
-      text-align: left;
-      padding: 10px;
-      background-color: #f9f9f9;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-    }
-
-    #items div {
-      margin-bottom: 5px;
-    }
-
-    #total {
-      font-weight: bold;
-      margin-top: 10px;
-    }
-
-    #dialog {
-      text-align: center;
-      background-color: #ffdddd;
-      color: #d8000c;
-      padding: 10px;
-      border: 1px solid #d8000c;
-      border-radius: 4px;
-      margin-top: 10px;
-    }
   </style>
 </head>
 <body>
   <div id="app">
     <div id="content">
-      <h2>Receipt Printer</h2>
-      <div>
-        <input type="text" id="item-name" placeholder="Item name">
-        <input type="number" id="item-price" placeholder="Item price" step="0.01">
-        <button id="add-item-btn">Add Item</button>
-      </div>
-      <div id="items"></div>
-      <div id="total">Total: $<span id="total-price">0.00</span></div>
+      <input type="text" id="message" placeholder="Enter text to print">
       <button id="print-btn">Print</button>
     </div>
     <div id="dialog" class="hidden">
@@ -103,29 +56,9 @@
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const dialog = document.getElementById('dialog');
-      const itemNameInput = document.getElementById('item-name');
-      const itemPriceInput = document.getElementById('item-price');
-      const addItemBtn = document.getElementById('add-item-btn');
-      const itemsDiv = document.getElementById('items');
-      const totalPriceSpan = document.getElementById('total-price');
+      const message = document.getElementById('message');
       const printBtn = document.getElementById('print-btn');
       let printCharacteristic;
-      let total = 0;
-
-      addItemBtn.addEventListener('click', () => {
-        const itemName = itemNameInput.value.trim();
-        const itemPrice = parseFloat(itemPriceInput.value.trim());
-
-        if (itemName && !isNaN(itemPrice)) {
-          const itemDiv = document.createElement('div');
-          itemDiv.textContent = `${itemName}: $${itemPrice.toFixed(2)}`;
-          itemsDiv.appendChild(itemDiv);
-          total += itemPrice;
-          totalPriceSpan.textContent = total.toFixed(2);
-          itemNameInput.value = '';
-          itemPriceInput.value = '';
-        }
-      });
 
       async function print() {
         try {
@@ -139,29 +72,18 @@
             const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
             printCharacteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
           }
-          await sendReceiptData();
+          await sendTextData();
         } catch (error) {
           handleError(error);
         }
       }
 
-      async function sendReceiptData() {
-        const items = Array.from(itemsDiv.children).map(item => item.textContent).join('\n');
-        if (!items) return;
-
-        const receipt = `
-          ***********************
-          RECEIPT
-          ***********************
-          ${items}
-          -----------------------
-          Total: $${total.toFixed(2)}
-          ***********************
-        `.trim();
-
+      async function sendTextData() {
+        const text = message.value;
+        if (!text) return; // Don't print if no text entered
         try {
           const encoder = new TextEncoder("utf-8");
-          const data = encoder.encode(receipt + '\u000A\u000D');
+          const data = encoder.encode(text + '\u000A\u000D'); // Add line feed and carriage return
           await printCharacteristic.writeValue(data);
         } catch (error) {
           handleError(error);
