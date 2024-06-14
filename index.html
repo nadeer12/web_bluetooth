@@ -146,10 +146,19 @@
       }
 
       async function sendReceiptData() {
-        const items = itemsDiv.textContent.trim();
+        const items = Array.from(itemsDiv.children).map(item => item.textContent).join('\n');
         if (!items) return;
 
-        const receipt = `Receipt\n${items}\nTotal: $${total.toFixed(2)}\n`;
+        const receipt = `
+          ***********************
+          RECEIPT
+          ***********************
+          ${items}
+          -----------------------
+          Total: $${total.toFixed(2)}
+          ***********************
+        `.trim();
+
         try {
           const encoder = new TextEncoder("utf-8");
           const data = encoder.encode(receipt + '\u000A\u000D');
